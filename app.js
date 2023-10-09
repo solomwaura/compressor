@@ -1,72 +1,72 @@
-const express = require("express")
-const app = express()
-const http = require("http").createServer(app)
- 
-// [other modules]
+const express = require('express');
+const multer = require('multer');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const sharp = require('sharp');
 
-const compressImages = require("compress-images")
-const formidable = require("express-formidable")
-app.use(formidable())
- 
+const app = express();
+const port = 3300;
+
 const fileSystem = require("fs")
 app.set("view engine", "ejs")
- 
-const port = process.env.PORT || 3300
 
- 
-http.listen(port, function () {
-    console.log("Server started running at port: http://127.0.0.1:" + port)
- 
-    app.post("/compressImage", function (request, result) {
-        const image = request.files.image
-        if (image.size > 0) {
-     
-            if (image.type == "image/png" || image.type == "image/jpeg") {
-                fileSystem.readFile(image.path, function (error, data) {
-                    if (error) throw error
-     
-                    const filePath = "temp-uploads/" + (new Date().getTime()) + "-" + image.name
-                    const compressedFilePath = "uploads/"
-                    const compression = 60
-                     
-                    fileSystem.writeFile(filePath, data, async function (error) {
-                        if (error) throw error
-                         
-                        compressImages(filePath, compressedFilePath, { compress_force: false, statistic: true, autoupdate: true }, false,
-                            { jpg: { engine: "mozjpeg", command: ["-quality", compression] } },
-                            { png: { engine: "pngquant", command: ["--quality=" + compression + "-" + compression, "-o"] } },
-                            { svg: { engine: "svgo", command: "--multipass" } },
-                            { gif: { engine: "gifsicle", command: ["--colors", "64", "--use-col=web"] } },
-                            async function (error, completed, statistic) {
-                                console.log("-------------")
-                                console.log(error)
-                                console.log(completed)
-                                console.log(statistic)
-                                console.log("-------------")
-     
-                                fileSystem.unlink(filePath, function (error) {
-                                    if (error) throw error
-                                })
-                            }
-                        )
-     
-                        result.send("File has been compressed and saved.")
-                    })
-     
-                    fileSystem.unlink(image.path, function (error) {
-                        if (error) throw error
-                    })
-                })
-            } else {
-                result.send("Please select an image")
-            }
+const storage = multer.memoryStorage(); // Store the uploaded image in memory
+const upload = multer({ storage: storage });
+
+app.post("/compressImage", upload.single('image'), function (request, result) {
+    const image = request.file; // Use request.file to access the uploaded file
+
+    if (image && image.size > 0) {
+        if (image.mimetype == "image/png" || image.mimetype == "image/jpeg") {
+            const tempDir = os.tmpdir(); // Get the system's temporary directory
+
+            // Generate a unique filename for the uploaded image
+            const uniqueFileName = new Date().getTime() + '-' + image.originalname;
+            const filePath = path.join(tempDir, uniqueFileName);
+
+            console.log('the file path is:', filePath);
+
+            const sharpStream = sharp(image.buffer).jpeg({ quality: 60 });
+
+            result.setHeader('Content-Disposition', 'attachment; filename="compressed-image.jpg"');
+
+            const responseStream = sharpStream.pipe(result);
+
+            responseStream.on('error', (error) => {
+                console.error('Error sending the image:', error);
+            
+                // Check if the file exists before attempting to delete it
+                if (fs.existsSync(filePath)) {
+                    fs.unlink(filePath, function (deleteError) {
+                        if (deleteError) console.error('Error deleting the file:', deleteError);
+                    });
+                }
+            });
+            
+            // Notify when the response stream ends
+            responseStream.on('finish', () => {
+                // Check if the file exists before attempting to delete it
+                if (fs.existsSync(filePath)) {
+                    fs.unlink(filePath, function (deleteError) {
+                        if (deleteError) console.error('Error deleting the file:', deleteError);
+                    });
+                }
+            });
+
+              
         } else {
-            result.send("Please select an image")
+            result.send("Please select a valid image (PNG or JPEG).");
         }
-    })
- 
-    app.get("/", function (request, result) {
-        result.render("index")
-    })
-    
+    } else {
+        result.send("Please select an image.");
+    }
+});
+
+app.get("/", function (request, result) {
+    result.render("index")
 })
+
+app.listen(port, () => {
+    console.log(`Server is listening on port ${port}`);
+});
