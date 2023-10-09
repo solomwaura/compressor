@@ -3,13 +3,109 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
         <title>Compress image</title>
+
+        <style>
+            .container{
+                padding: 20px;
+            }
+            .container h3{
+                text-align: center;
+                margin: 4px 0;
+            }
+
+            .container form{
+                width: 60%;
+                margin: 10px auto;
+                background-color: rgb(252, 252, 252);
+            }
+
+            .form-group{
+                padding: 10px 15px;
+                margin: 10px auto;
+            }
+            input{
+                
+                width: 100%;
+                border-radius: 7px;
+                padding: 15px 10px;
+            }
+            .form-control-file{
+                background-color: white;
+                border: 1px solid rgb(56, 139, 56);
+            }
+
+            .login{
+                background-color: rgb(98, 102, 101);
+                color: #fff;
+                border: 1px solid rgb(56, 139, 56);
+                font-size: 20px;
+            }
+
+            .login:hover{
+                background-color: rgb(56, 139, 56);
+                color: #000;
+            }
+
+            .container h4{
+                text-align: center;
+                padding: 5px;
+                margin: 5px auto;
+            }
+
+            h4 a{
+                text-decoration: none;
+                color: blue;
+                font-size: 16px;
+            }
+            h4 a:hover{
+                color: rgb(56, 139, 56);
+                text-decoration: underline;
+            }
+
+            @media screen and (max-width: 600px){
+                .container{
+                    padding: 10px;
+                }
+                .container h3{
+                    text-align: center;
+                    margin: 2px 0;
+                }
+
+                .container form{
+                    width: 100%;
+                }
+
+                .form-group{
+                    padding: 8px 10px;
+                    margin: 10px auto;
+                }
+
+                .login{
+                    font-size: 16px;
+                }
+            }
+        </style>
     </head>
  
     <body>
-        <form method="POST" action="/compressImage" enctype="multipart/form-data">
-            <input type="file" name="image" accept="image/*" required />
-            <input type="submit" value="Compress image" />
-        </form>
+        <div class="container">
+            <h3>Select Image to Compress</h3>
+            <form method="POST" action="/compressImage" enctype="multipart/form-data">
+                <div class="form-group">
+                    <input type="file" name="image" accept="image/*" class="form-control-file" required />
+                </div>
+                <div class="form-group">
+                    <input type="submit" class="login" value="Compress Image" />
+                </div>
+                
+                
+            </form>
+
+            <h4><a href="https://kvresident.com">Back to KvMarket</a></h4>
+        </div>
     </body>
 </html>
