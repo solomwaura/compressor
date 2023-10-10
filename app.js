@@ -14,8 +14,8 @@ app.set("view engine", "ejs")
 const storage = multer.memoryStorage(); // Store the uploaded image in memory
 const upload = multer({ storage: storage });
 
-app.post("/compressImage", upload.single('image'), function (request, result) {
-    const image = request.file; // Use request.file to access the uploaded file
+app.post("/compressImage", upload.single('image'), function (req, res) {
+    const image = req.file; // Use request.file to access the uploaded file
 
     if (image && image.size > 0) {
         if (image.mimetype == "image/png" || image.mimetype == "image/jpeg") {
@@ -29,9 +29,9 @@ app.post("/compressImage", upload.single('image'), function (request, result) {
 
             const sharpStream = sharp(image.buffer).jpeg({ quality: 60 });
 
-            result.setHeader('Content-Disposition', 'attachment; filename="compressed-image.jpg"');
+            res.setHeader('Content-Disposition', 'attachment; filename="compressed-image.jpg"');
 
-            const responseStream = sharpStream.pipe(result);
+            const responseStream = sharpStream.pipe(res);
 
             responseStream.on('error', (error) => {
                 console.error('Error sending the image:', error);
@@ -56,15 +56,15 @@ app.post("/compressImage", upload.single('image'), function (request, result) {
 
               
         } else {
-            result.send("Please select a valid image (PNG or JPEG).");
+            res.send("Please select a valid image (PNG or JPEG).");
         }
     } else {
-        result.send("Please select an image.");
+        res.send("Please select an image.");
     }
 });
 
-app.get("/", function (request, result) {
-    result.render("index")
+app.get("/", function (req, res) {
+    res.render("index")
 })
 
 app.listen(port, () => {
